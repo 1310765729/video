@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.niuniu.dao.SubjectDao">
+	
+	
+	<select id="getById" resultType="subjectDO">
+		select id,name,gmt_create from subject where id=#{id} 
+	
+	</select>
+	<select id="listObject" resultType="subjectDO">
+		SELECT 
+		id
+		, name 
+		FROM 
+		subject 
+		where status = 0
+	</select>
+
+	<select id="listObjectByQuery" resultType="SubjectDO">
+		SELECT
+		s.id
+		, s.name as name
+		, count(distinct c.id) as courseCount,
+		count(v.id) as videoCount,
+		s.gmt_create as gmtCreate,
+		s.gmt_modified as gmtModified 
+		FROM 
+		subject s LEFT JOIN course c ON s.id =
+		c.subject_id
+		LEFT JOIN video v ON c.id = v.course_id
+		<where>
+			<if test="keywords != null">
+				<foreach collection="keywords" item="item" open="(" close=")"
+					separator="OR">
+					s.name LIKE
+					'%${item}%'
+				</foreach>
+			</if>
+
+			AND s.status = 0
+		</where>
+		GROUP BY
+		s.id
+		<if test="sort != null and order != null">
+			ORDER BY ${sort} ${order}
+		</if>
+		<if test="offset != null and limit != null">
+			LIMIT ${offset}, ${limit}
+		</if>
+	</select>
+
+	<select id="countObjectByQuery" resultType="int">
+		SELECT
+		count(*)
+		FROM
+		(
+		SELECT
+		count(s.id)
+		FROM
+		subject s LEFT JOIN course c
+		ON s.id = c.subject_id
+		LEFT JOIN video v ON c.id = v.course_id
+		<where>
+			<if test="keywords != null">
+				<foreach collection="keywords" item="item" open="(" close=")"
+					separator="OR">
+					s.name LIKE
+					'%${item}%'
+				</foreach>
+			</if>
+
+			AND s.status = 0
+		</where>
+		GROUP BY
+		s.id
+		) a
+	</select>
+
+	<insert id="insertObject">
+		INSERT INTO 
+		subject(name) 
+		VALUES (#{name})
+	</insert>
+
+	<update id="updateObject">
+		UPDATE 
+		subject 
+		<set>
+			<if test="name != null">
+				name = #{name},
+			</if>
+
+			<if test="createTime != null">
+				create_time = #{createTime},
+			</if>
+		</set>
+		WHERE
+		id = #{id}
+	</update>
+	
+	<!-- <update id="removeObject">
+		UPDATE subject SET status = 1
+		<where>
+			<foreach collection="arrays" item="item" open="(" close=")" separator="OR">
+				id = ${item}
+			</foreach>
+		</where>
+	</update> -->
+	
+	<delete id="delete">
+		update subject 
+		set status=1 where id=#{id}
+	
+	</delete>
+	
+	<delete id="removeObject">
+		DELETE FROM 
+		subject  
+		WHERE id in
+		 <foreach collection="array" item="item" open="(" close=")" separator=",">
+			 #{item}
+		 </foreach>
+		
+	</delete>
+ 
+</mapper>
+
+
+
+
+
+
+
+
+
+

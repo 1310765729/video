@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.niuniu.dao.SpeakerDao">
+	<select id="listObject" resultType="speakerDO">
+		SELECT 
+		id
+		, name 
+		FROM 
+		speaker 
+		where status=0
+		
+	</select>
+	<select id="getById" resultType="speakerDO">
+		select id,name,job,`describe`,gmt_create from speaker where id=#{id} 
+	
+	</select>
+	<select id="listObjectByQuery" resultType="speakerDO">
+		SELECT
+		id
+		, name
+		, job
+		, image_url imageUrl 
+		, `describe`
+		FROM
+		speaker
+		<where>
+			<if test="keywords != null">
+				<foreach collection="keywords" item="item" open="(" close=")"
+					separator="OR">
+					name LIKE '%${item}%'
+				</foreach>
+			</if>
+
+			AND status = 0
+		</where>
+		LIMIT ${offset}, ${limit}
+	</select>
+
+	<select id="countObjectByQuery" resultType="int">
+		SELECT
+		count(*)
+		FROM
+		speaker
+		<where>
+			<if test="keywords != null">
+				<foreach collection="keywords" item="item" open="(" close=")"
+					separator="OR">
+					name LIKE '%${item}%'
+				</foreach>
+			</if>
+
+			AND status = 0
+		</where>
+	</select>
+
+	<insert id="insertObject">
+		INSERT INTO
+		speaker(name, job, image_url, `describe`)
+		VALUES
+		(#{name}, #{job}, #{imageUrl}, #{describe})
+	</insert>
+
+	<update id="updateObject">
+		UPDATE
+		speaker
+		<set>
+			<if test="name != null">
+				name = #{name},
+			</if>
+
+			<if test="job != null">
+				job = #{job},
+			</if>
+
+			<if test="imageUrl != null">
+				image_url = #{imageUrl},
+			</if>
+
+			<if test="describe != null">
+				`describe` = #{describe},
+			</if>
+
+			<if test="status != null">
+				status = #{status},
+			</if>
+		</set>
+		WHERE
+		id = #{id}
+	</update>
+	
+	
+	<delete id="delete">
+		update speaker 
+		set status=1 where id=#{id}
+	
+	</delete>
+	
+	<delete id="removeObject">
+		DELETE FROM 
+		speaker  
+		WHERE id in
+		 <foreach collection="array" item="item" open="(" close=")" separator=",">
+			 #{item}
+		 </foreach>
+		
+	</delete>
+
+
+</mapper>
